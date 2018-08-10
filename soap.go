@@ -66,6 +66,7 @@ func (c *Client) Call(m string, p Params) (err error) {
 	c.Params = p
 
 	c.payload, err = xml.MarshalIndent(c, "", "")
+
 	if err != nil {
 		return err
 	}
@@ -111,9 +112,14 @@ func (c *Client) doRequest(url string) ([]byte, error) {
 
 	req.ContentLength = int64(len(c.payload))
 
+	SoapAction := c.Definitions.FindOperation(c.Method)
+	if SoapAction == "" {
+		SoapAction = fmt.Sprintf("%s/%s", c.URL, c.Method)
+	}
+
 	req.Header.Add("Content-Type", "text/xml;charset=UTF-8")
 	req.Header.Add("Accept", "text/xml")
-	req.Header.Add("SOAPAction", fmt.Sprintf("%s/%s", c.URL, c.Method))
+	req.Header.Add("SOAPAction", SoapAction)
 
 	if c.Options.HttpAuth != (Auth{}) {
 		req.SetBasicAuth(c.Options.HttpAuth.Username, c.Options.HttpAuth.Password)

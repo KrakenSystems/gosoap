@@ -180,3 +180,14 @@ type Fault struct {
 	Description string `xml:"faultstring"`
 	Detail      string `xml:"detail"`
 }
+
+func (wsdl *wsdlDefinitions) FindOperation(operation string) string {
+	for i, _ := range wsdl.Bindings {
+		for _, op := range wsdl.Bindings[i].Operations {
+			if op.Name == operation {
+				return op.SoapOperations[0].SoapAction
+			}
+		}
+	}
+	return ""
+}
