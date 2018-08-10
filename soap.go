@@ -71,7 +71,12 @@ func (c *Client) Call(m string, p Params) (err error) {
 		return err
 	}
 
-	b, err := c.doRequest(c.Definitions.Services[0].Ports[0].SoapAddresses[0].Location)
+	url := c.Options.OverrideActionURL
+	if url == "" {
+		url = c.Definitions.Services[0].Ports[0].SoapAddresses[0].Location
+	}
+
+	b, err := c.doRequest(url)
 	if err != nil {
 		return err
 	}

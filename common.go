@@ -5,5 +5,6 @@ type Auth struct {
 	Password string
 }
 type Options struct {
-	HttpAuth Auth
+	HttpAuth          Auth
+	OverrideActionURL string
 }
