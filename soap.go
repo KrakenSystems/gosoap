@@ -14,13 +14,17 @@ import (
 type Params map[string]string
 
 // SoapClient return new *Client to handle the requests with the WSDL
-func SoapClient(wsdl string) (*Client, error) {
+func SoapClient(wsdl string, options *Options) (*Client, error) {
+	if options == nil {
+		options = &Options{}
+	}
+
 	_, err := url.Parse(wsdl)
 	if err != nil {
 		return nil, err
 	}
 
-	d, err := getWsdlDefinitions(wsdl)
+	d, err := getWsdlDefinitions(wsdl, options)
 	if err != nil {
 		return nil, err
 	}
@@ -29,6 +33,7 @@ func SoapClient(wsdl string) (*Client, error) {
 		WSDL:        wsdl,
 		URL:         strings.TrimSuffix(d.TargetNamespace, "/"),
 		Definitions: d,
+		Options:     *options,
 	}
 
 	return c, nil
@@ -46,6 +51,7 @@ type Client struct {
 	Definitions  *wsdlDefinitions
 	Body         []byte
 	Header       []byte
+	Options      Options
 
 	payload []byte
 }
@@ -108,6 +114,10 @@ func (c *Client) doRequest(url string) ([]byte, error) {
 	req.Header.Add("Content-Type", "text/xml;charset=UTF-8")
 	req.Header.Add("Accept", "text/xml")
 	req.Header.Add("SOAPAction", fmt.Sprintf("%s/%s", c.URL, c.Method))
+
+	if c.Options.HttpAuth != (Auth{}) {
+		req.SetBasicAuth(c.Options.HttpAuth.Username, c.Options.HttpAuth.Password)
+	}
 
 	resp, err := client.Do(req)
 	if err != nil {

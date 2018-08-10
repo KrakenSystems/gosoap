@@ -2,8 +2,8 @@ package gosoap
 
 import (
 	"encoding/xml"
-	"net/http"
 	"golang.org/x/net/html/charset"
+	"net/http"
 )
 
 type wsdlDefinitions struct {
@@ -153,8 +153,15 @@ type xsdMaxInclusive struct {
 }
 
 // getWsdlDefinitions sent request to the wsdl url and set definitions on struct
-func getWsdlDefinitions(u string) (wsdl *wsdlDefinitions, err error) {
-	r, err := http.Get(u)
+func getWsdlDefinitions(u string, options *Options) (wsdl *wsdlDefinitions, err error) {
+	req, err := http.NewRequest("GET", u, nil)
+
+	if options != nil && options.HttpAuth != (Auth{}) {
+		req.SetBasicAuth(options.HttpAuth.Username, options.HttpAuth.Password)
+	}
+	client := &http.Client{}
+	r, err := client.Do(req)
+
 	if err != nil {
 		return nil, err
 	}
